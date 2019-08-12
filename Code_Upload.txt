@@ -1,0 +1,424 @@
+
+import Pkg; Pkg.add("ProgressMeter")
+
+Q1.
+
+using OpenStreetMapX
+mymap = get_map_data("/Users/Rajaram/Downloads/ottawamap.osm");
+
+nodeids = collect(keys(mymap.nodes))
+
+println("The map contains now $(length(mymap.nodes)) nodes")
+
+Q2.
+import Pkg
+using ProgressMeter
+
+routes = Vector{Vector{Int}}()
+visits = Dict{Int,Int}()
+p = Progress(3000, 1) #update interval, 1 sec
+
+for i in 1:3000
+    origin,destin = [point_to_nodes(generate_point_in_bounds(mymap), mymap) for i in 1:2]
+    route, route_dist, route_time = OpenStreetMapX.shortest_route(mymap,origin,destin,routing=:astar)
+    if route_time < Inf
+        push!(routes, route)
+        for n in route
+            visits[n] = get(visits, n,0)+1
+        end
+        
+    end
+    next!(p)
+end
+
+println("We have identified and narrowed to ",length(routes)," routes")
+println("We have identified visits for each node ",visits,".")
+
+Q3.
+Nodeshighestvisit = sort(collect(visits), by = tuple -> last(tuple), rev=true)[1:10] #Top 10
+
+Q4. 
+using PyCall
+folium = pyimport("folium")
+mcolors = pyimport("matplotlib.colors")
+colmap = pyimport("matplotlib.cm")
+roads=100
+mapimage = folium.Map()
+colormappath = colmap.get_cmap("prism")
+
+
+for r=1:100
+    location = [LLA(mymap.nodes[n],mymap.bounds) for n in routes[r]]
+    folium.PolyLine([(maploc.lat, maploc.lon) for maploc in location],
+        color=mcolors.to_hex(colormappath(r/roads))       
+    ).add_to(mapimage)
+end
+
+maparea = [(mymap.bounds.min_y,mymap.bounds.min_x),(mymap.bounds.max_y,mymap.bounds.max_x)]
+mapimage.fit_bounds(maparea)
+mapimage
+
+Q5.
+
+mapimage = folium.Map()
+
+maxvisistsinnode= maximum(values(visits)) 
+
+for k=keys(visits) 
+    visits[k] > 150  && continue
+    locations = LLA(mymap.nodes[k],mymap.bounds) 
+    folium.Circle( location=[locations.lat,locations.lon], 
+        radius=visits[k]*300/maxvisistsinnode, 
+        color="blue", 
+        weight=0.8, 
+        fill_color="blue" ).add_to(mapimage) 
+    end 
+mapimage.fit_bounds(maparea) 
+mapimage
+
+Q6.
+mapimage = folium.Map()
+
+maxvisistsinnode= maximum(values(visits)) 
+
+for k=keys(visits) 
+    visits[k] > 200  && continue
+    locations = LLA(mymap.nodes[k],mymap.bounds) 
+    folium.Circle( location=[locations.lat,locations.lon], 
+        radius=visits[k]*300/maxvisistsinnode, 
+        color="blue", 
+        weight=0.8, 
+        fill_color="blue" ).add_to(mapimage) 
+    end 
+mapimage.fit_bounds(maparea) 
+mapimage
+
+Q7.
+
+mapimage = folium.Map()
+
+maxvisistsinnode= maximum(values(visits)) 
+
+for k=keys(visits) 
+    visits[k] > 250  && continue
+    locations = LLA(mymap.nodes[k],mymap.bounds) 
+    folium.Circle( location=[locations.lat,locations.lon], 
+        radius=visits[k]*300/maxvisistsinnode, 
+        color="blue", 
+        weight=0.8, 
+        fill_color="blue" ).add_to(mapimage) 
+    end 
+mapimage.fit_bounds(maparea) 
+mapimage
+
+Q8.
+
+mapimage = folium.Map()
+
+maxvisistsinnode= maximum(values(visits)) 
+
+for k=keys(visits) 
+    visits[k] > 299  && continue
+    locations = LLA(mymap.nodes[k],mymap.bounds) 
+    folium.Circle( location=[locations.lat,locations.lon], 
+        radius=visits[k]*300/maxvisistsinnode, 
+        color="blue", 
+        weight=0.8, 
+        fill_color="blue" ).add_to(mapimage) 
+    end 
+mapimage.fit_bounds(maparea) 
+mapimage
+
+Q9.
+mapimage = folium.Map()
+
+maxvisistsinnode= maximum(values(visits)) 
+
+for k=keys(visits) 
+    visits[k] < 300 && continue
+    locations = LLA(mymap.nodes[k],mymap.bounds) 
+    folium.Circle( location=[locations.lat,locations.lon], 
+        radius=visits[k]*300/maxvisistsinnode, 
+        color="yellow", 
+        weight=0.8, 
+        fill_color="blue" ).add_to(mapimage) 
+    end 
+mapimage.fit_bounds(maparea) 
+mapimage
+
+Q10.
+mapimage = folium.Map()
+
+maxvisistsinnode= maximum(values(visits)) 
+
+for k=keys(visits) 
+    visits[k] < 350 && continue
+    locations = LLA(mymap.nodes[k],mymap.bounds) 
+    folium.Circle( location=[locations.lat,locations.lon], 
+        radius=visits[k]*300/maxvisistsinnode, 
+        color="yellow", 
+        weight=0.8, 
+        fill_color="blue" ).add_to(mapimage) 
+    end 
+mapimage.fit_bounds(maparea) 
+mapimage
+
+Q11.
+
+mapimage = folium.Map()
+
+maxvisistsinnode= maximum(values(visits)) 
+
+for k=keys(visits) 
+    visits[k] < 400 && continue
+    locations = LLA(mymap.nodes[k],mymap.bounds) 
+    folium.Circle( location=[locations.lat,locations.lon], 
+        radius=visits[k]*300/maxvisistsinnode, 
+        color="yellow", 
+        weight=0.8, 
+        fill_color="blue" ).add_to(mapimage) 
+    end 
+mapimage.fit_bounds(maparea) 
+mapimage
+
+Q12.
+
+coorinmapshort = OpenStreetMapX.shortest_route(mymap, 963674109 , 495875730, routing=:astar )[1]
+coorinmapdistance = OpenStreetMapX.shortest_route(mymap, 963674109 , 495875730, routing=:astar )[2]
+coorinmaproutetime = OpenStreetMapX.shortest_route(mymap, 963674109 , 495875730, routing=:astar )[3]
+
+coorinmapshortd = OpenStreetMapX.shortest_route(mymap, 963674109 , 495875730, routing=:dijkstra)[1]
+coorinmapdistanced = OpenStreetMapX.shortest_route(mymap, 963674109 , 495875730, routing=:dijkstra )[2]
+coorinmaproutetimed = OpenStreetMapX.shortest_route(mymap, 963674109 , 495875730, routing=:dijkstra )[3]
+
+using OpenStreetMapXPlot
+import Plots
+Plots.gr()
+
+plotmymapshort = OpenStreetMapXPlot.plotmap(mymap,width=700,height=700);
+addroute!(plotmymapshort,mymap,coorinmapshort;route_color="blue");
+plot_nodes!(plotmymapshort,mymap,[coorinmapshort[1],coorinmapshort[end]],fontsize=20,color="grey");
+
+plotmymapshortd = OpenStreetMapXPlot.plotmap(mymap,width=700,height=700);
+addroute!(plotmymapshortd,mymap,coorinmapshortd;route_color="blue");
+plot_nodes!(plotmymapshortd,mymap,[coorinmapshortd[1],coorinmapshortd[end]],fontsize=20,color="grey");
+
+println("Distance between Rue Laurier/Alexandre Tache Blvd and Alexandra Bridge with Astar ",coorinmapdistance,".")
+println("Route Time with Astar ",coorinmaproutetime,".")
+
+println("Distance between Rue Laurier/Alexandre Tache Blvd and Alexandra Bridge with Dijkstra ",coorinmapdistanced,".")
+println("Route Time with Dijkstra ",coorinmaproutetimed,".")
+
+plotmymapshort
+
+Q13.
+
+coorinmapshortas = OpenStreetMapX.shortest_route(mymap, 963674109 , 901209345, routing=:astar )[1]
+coorinmapdistanceas = OpenStreetMapX.shortest_route(mymap, 963674109 , 901209345, routing=:astar )[2]
+coorinmaproutetimeas = OpenStreetMapX.shortest_route(mymap, 963674109 , 901209345, routing=:astar )[3]
+
+coorinmapshortad = OpenStreetMapX.shortest_route(mymap, 963674109 , 901209345, routing=:dijkstra )[1]
+coorinmapdistancead = OpenStreetMapX.shortest_route(mymap, 963674109 , 901209345, routing=:dijkstra )[2]
+coorinmaproutetimead = OpenStreetMapX.shortest_route(mymap, 963674109 , 901209345, routing=:dijkstra )[3]
+
+using OpenStreetMapXPlot
+import Plots
+Plots.gr()
+
+plotmymapshortas = OpenStreetMapXPlot.plotmap(mymap,width=700,height=700);
+addroute!(plotmymapshortas,mymap,coorinmapshortas;route_color="blue");
+plot_nodes!(plotmymapshortas,mymap,[coorinmapshortas[1],coorinmapshortas[end]],fontsize=20,color="grey");
+
+plotmymapshortad = OpenStreetMapXPlot.plotmap(mymap,width=700,height=700);
+addroute!(plotmymapshortad,mymap,coorinmapshortad;route_color="blue");
+plot_nodes!(plotmymapshortad,mymap,[coorinmapshortad[1],coorinmapshortad[end]],fontsize=20,color="grey");
+
+println("Distance between Cummings Bridge and Alexandra Bridge with astar  ",coorinmapdistanceas,".")
+println("Route Time with astar ",coorinmaproutetimeas,".")
+
+println("Distance between Cummings Bridge and Alexandra Bridge with dijkstra  ",coorinmapdistancead,".")
+println("Route Time with dijkstra ",coorinmaproutetimead,".")
+
+plotmymapshortas
+
+Q14.
+
+using OpenStreetMapX
+mymaptest = get_map_data("/Users/Rajaram/Downloads/ottawamapnewtest.osm");
+
+nodetestids = collect(keys(mymaptest.nodes))
+
+println("The map contains now $(length(mymaptest.nodes)) nodes")
+
+Q15.
+
+import Pkg
+using ProgressMeter
+
+routesn = Vector{Vector{Int}}()
+visitsn = Dict{Int,Int}()
+p = Progress(3000, 1) #update interval, 1 sec
+
+for i in 1:3000
+    originn,destinn = [point_to_nodes(generate_point_in_bounds(mymaptest), mymaptest) for i in 1:2]
+    routen, route_distn, route_timen = OpenStreetMapX.shortest_route(mymaptest,originn,destinn,routing=:astar)
+    if route_timen < Inf
+        push!(routesn, routen)
+        for n in routen
+            visitsn[n] = get(visitsn, n,0)+1
+        end
+        
+    end
+    next!(p)
+end
+
+println("We have identified and narrowed to ",length(routesn)," routes")
+println("We have identified visits for each node ",visitsn,".")
+
+Q16.
+Nodeshighestvisitn = sort(collect(visitsn), by = tuple -> last(tuple), rev=true)[1:10] #Top 10
+
+Q17.
+using PyCall
+folium = pyimport("folium")
+mcolors = pyimport("matplotlib.colors")
+colmap = pyimport("matplotlib.cm")
+roads=100
+mapimaget = folium.Map()
+colormappath = colmap.get_cmap("prism")
+
+
+for r=1:100
+    location = [LLA(mymaptest.nodes[n],mymaptest.bounds) for n in routesn[r]]
+    folium.PolyLine([(maploc.lat, maploc.lon) for maploc in location],
+        color=mcolors.to_hex(colormappath(r/roads))       
+    ).add_to(mapimaget)
+end
+
+mapareatest = [(mymaptest.bounds.min_y,mymaptest.bounds.min_x),(mymaptest.bounds.max_y,mymaptest.bounds.max_x)]
+mapimaget.fit_bounds(mapareatest)
+mapimaget
+
+Q18.
+mapimaget = folium.Map()
+
+maxvisistsinnode= maximum(values(visitsn)) 
+
+for k=keys(visitsn) 
+    visitsn[k] > 150 && continue
+    locations = LLA(mymaptest.nodes[k],mymaptest.bounds) 
+    folium.Circle( location=[locations.lat,locations.lon], 
+        radius=visitsn[k]*300/maxvisistsinnode, 
+        color="blue", 
+        weight=0.8, 
+        fill_color="orange" ).add_to(mapimaget) 
+    end 
+mapimaget.fit_bounds(mapareatest) 
+mapimaget
+
+Q19.
+mapimaget = folium.Map()
+
+maxvisistsinnode= maximum(values(visitsn)) 
+
+for k=keys(visitsn) 
+    visitsn[k] > 200 && continue
+    locations = LLA(mymaptest.nodes[k],mymaptest.bounds) 
+    folium.Circle( location=[locations.lat,locations.lon], 
+        radius=visitsn[k]*300/maxvisistsinnode, 
+        color="blue", 
+        weight=0.8, 
+        fill_color="orange" ).add_to(mapimaget) 
+    end 
+mapimaget.fit_bounds(mapareatest) 
+mapimaget
+
+Q20.
+
+mapimaget = folium.Map()
+
+maxvisistsinnode= maximum(values(visitsn)) 
+
+for k=keys(visitsn) 
+    visitsn[k] > 250 && continue
+    locations = LLA(mymaptest.nodes[k],mymaptest.bounds) 
+    folium.Circle( location=[locations.lat,locations.lon], 
+        radius=visitsn[k]*300/maxvisistsinnode, 
+        color="blue", 
+        weight=0.8, 
+        fill_color="orange" ).add_to(mapimaget) 
+    end 
+mapimaget.fit_bounds(mapareatest) 
+mapimaget
+
+Q21.
+
+mapimaget = folium.Map()
+
+maxvisistsinnode= maximum(values(visitsn)) 
+
+for k=keys(visitsn) 
+    visitsn[k] > 299 && continue
+    locations = LLA(mymaptest.nodes[k],mymaptest.bounds) 
+    folium.Circle( location=[locations.lat,locations.lon], 
+        radius=visitsn[k]*300/maxvisistsinnode, 
+        color="blue", 
+        weight=0.8, 
+        fill_color="orange" ).add_to(mapimaget) 
+    end 
+mapimaget.fit_bounds(mapareatest) 
+mapimaget
+
+Q22.
+
+mapimaget = folium.Map()
+
+maxvisistsinnode= maximum(values(visitsn)) 
+
+for k=keys(visitsn) 
+    visitsn[k] < 300 && continue
+    locations = LLA(mymaptest.nodes[k],mymaptest.bounds) 
+    folium.Circle( location=[locations.lat,locations.lon], 
+        radius=visitsn[k]*300/maxvisistsinnode, 
+        color="blue", 
+        weight=0.8, 
+        fill_color="orange" ).add_to(mapimaget) 
+    end 
+mapimaget.fit_bounds(mapareatest) 
+mapimaget
+
+Q23.
+mapimaget = folium.Map()
+
+maxvisistsinnode= maximum(values(visitsn)) 
+
+for k=keys(visitsn) 
+    visitsn[k] < 350 && continue
+    locations = LLA(mymaptest.nodes[k],mymaptest.bounds) 
+    folium.Circle( location=[locations.lat,locations.lon], 
+        radius=visitsn[k]*300/maxvisistsinnode, 
+        color="blue", 
+        weight=0.8, 
+        fill_color="orange" ).add_to(mapimaget) 
+    end 
+mapimaget.fit_bounds(mapareatest) 
+mapimaget
+
+Q24.
+mapimaget = folium.Map()
+
+maxvisistsinnode= maximum(values(visitsn)) 
+
+for k=keys(visitsn) 
+    visitsn[k] < 395 && continue
+    locations = LLA(mymaptest.nodes[k],mymaptest.bounds) 
+    folium.Circle( location=[locations.lat,locations.lon], 
+        radius=visitsn[k]*300/maxvisistsinnode, 
+        color="blue", 
+        weight=0.8, 
+        fill_color="orange" ).add_to(mapimaget) 
+    end 
+mapimaget.fit_bounds(mapareatest) 
+mapimaget
+
+Q25.
