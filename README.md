@@ -2,5 +2,5 @@ Here you may find the MRP that I have done for my Masters in Data Science. It is
 
 
 References-
-https://github.com/pszufe/OpenStreetMapX.jl
+https://github.com/pszufe/OpenStreetMapX.jl and
 https://github.com/pszufe/OpenStreetMapX_Tutorial
