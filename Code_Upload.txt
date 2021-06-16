@@ -421,4 +421,3 @@ for k=keys(visitsn)
 mapimaget.fit_bounds(mapareatest) 
 mapimaget
 
-Q25.
